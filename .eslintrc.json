@@ -1,0 +1,18 @@
+{
+  "root": true,
+  "extends": ["next/core-web-vitals", "plugin:prettier/recommended"],
+  "plugins": ["simple-import-sort", "tailwindcss"],
+  "rules": {
+    "tailwindcss/classnames-order": "off", // сортировку делает prettier-plugin-tailwindcss
+    "tailwindcss/no-custom-classname": "off",
+    "simple-import-sort/imports": "warn",
+    "simple-import-sort/exports": "warn",
+    "import/order": "off", // избегаем конфликта
+    "prettier/prettier": "warn"
+  },
+  "settings": {
+    "tailwindcss": {
+      "callees": ["cn"]
+    }
+  }
+}
