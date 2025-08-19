@@ -2,7 +2,7 @@ import type { Config } from "tailwindcss"
 import defaultTheme from "tailwindcss/defaultTheme"
 
 const config: Config = {
-  darkMode: ["class"], // важно для shadcn/ui
+  darkMode: 'class', // важно для shadcn/ui
   content: [
     "./src/app/**/*.{ts,tsx}",
     "./src/components/**/*.{ts,tsx}",
