@@ -111,14 +111,15 @@ export function CatalogClient({
   }, [buildQuery, router])
 
   const fetchData = React.useCallback(
-    async (p: number, replaceItems: boolean) => {
+    async (
+      p: number,
+      replaceItems: boolean,
+      signal?: AbortSignal,
+    ) => {
       setLoading(true)
-      const controller = new AbortController()
       try {
         const qs = buildQuery({ page: p })
-        const res = await fetch(`/api/campaigns?${qs}`, {
-          signal: controller.signal,
-        })
+        const res = await fetch(`/api/campaigns?${qs}`, { signal })
         if (!res.ok) throw new Error("Ошибка загрузки")
         const data: ResponseData = await res.json()
         setFacets(data.facets)
@@ -126,18 +127,25 @@ export function CatalogClient({
         setPage(data.page)
         setItems((prev) => (replaceItems ? data.items : [...prev, ...data.items]))
       } catch (e: unknown) {
-        const message = e instanceof Error ? e.message : String(e)
-        toast({ title: "Ошибка", description: message })
+        if (e instanceof DOMException && e.name === "AbortError") {
+          console.log("Запрос отменён клиентом")
+        } else {
+          const message = e instanceof Error ? e.message : String(e)
+          toast({ title: "Ошибка", description: message })
+        }
       } finally {
         setLoading(false)
       }
-      return () => controller.abort()
     },
     [buildQuery, toast],
   )
 
   React.useEffect(() => {
-    fetchData(1, true)
+    const controller = new AbortController()
+    fetchData(1, true, controller.signal)
+    return () => {
+      controller.abort()
+    }
   }, [fetchData])
 
   const loadMore = () => fetchData(page + 1, false)
