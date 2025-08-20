@@ -100,7 +100,14 @@ export function CatalogClient({
 
   React.useEffect(() => {
     const qs = buildQuery()
-    router.replace(qs ? `/?${qs}` : "/", { scroll: false })
+    const url = qs ? `/?${qs}` : "/"
+    const current =
+      typeof window !== "undefined"
+        ? window.location.pathname + window.location.search
+        : ""
+    if (url !== current) {
+      router.replace(url, { scroll: false })
+    }
   }, [buildQuery, router])
 
   const fetchData = React.useCallback(
