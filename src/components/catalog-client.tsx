@@ -120,7 +120,15 @@ export function CatalogClient({
       try {
         const qs = buildQuery({ page: p })
         const res = await fetch(`/api/campaigns?${qs}`, { signal })
-        if (!res.ok) throw new Error("Ошибка загрузки")
+        if (!res.ok) {
+          let error: unknown
+          try {
+            error = await res.json()
+          } catch {
+            /* empty */
+          }
+          throw { status: res.status, statusText: res.statusText, error }
+        }
         const data: ResponseData = await res.json()
         setFacets(data.facets)
         setTotal(data.total)
@@ -130,8 +138,19 @@ export function CatalogClient({
         if (e instanceof DOMException && e.name === "AbortError") {
           console.log("Запрос отменён клиентом")
         } else {
-          const message = e instanceof Error ? e.message : String(e)
-          toast({ title: "Ошибка", description: message })
+          console.error(e)
+          let description: string
+          if (typeof e === "object" && e && "status" in e) {
+            const err = e as {
+              status?: number
+              statusText?: string
+              error?: unknown
+            }
+            description = `${err.status} ${err.statusText}${err.error ? `: ${JSON.stringify(err.error)}` : ""}`
+          } else {
+            description = e instanceof Error ? e.message : String(e)
+          }
+          toast({ title: "Ошибка", description })
         }
       } finally {
         setLoading(false)
